@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-const Nightmare = require('nightmare');
-const nightmare = Nightmare({
-    show: true,
-    typeInterval: 50
+const Nightmare = require('nightmare'),
+    vo = require('vo'),
+    nightmare = Nightmare({
+        show: true,
+        typeInterval: 25
 });
 
 const user = process.env.AC_USER;
@@ -17,18 +18,18 @@ function logIntoAdCenter(){
         .type("input[name=username]", user)
         .type("#passwordInput", pword)
         .click("button[type=submit]")
-        .wait(5000)
+        .wait(3000)
 }
 
 function goToCreateZonePage(){
     return nightmare
         .goto("http://adcenter.lijit.com/adminpublisher/search/zone/new/" + affiliateId)
-        .wait(3000);
+        .wait(1000);
 }
 
 function getSizeId(size){
-	var standardizedSize = size.toLowerCase();
-	var sizeIdKey = {
+	const standardizedSize = size.toLowerCase();
+	const sizeIdKey = {
 		"120x600": 42,
 		"160x90": 45,
 		"768x640": 44,
@@ -60,8 +61,9 @@ function fillOutForm(){
             document.querySelector('#cpmfloor').value = ''
         })
         .type("#cpmfloor", pFloor)
+        .click("input[id=using_efp]")
+        .click("input[id=international]")
         .select("#ad_type", size);
-
 }
 
 
