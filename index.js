@@ -6,6 +6,7 @@ const Nightmare = require('nightmare'),
         show: true,
         typeInterval: 25
 });
+const Promise = require('bluebird');
 
 const user = process.env.AC_USER;
 const pword = process.env.AC_PASS;
@@ -21,9 +22,22 @@ function logIntoAdCenter(){
         .wait(3000)
 }
 
-function goToCreateZonePage(){
+function makeTheTag(tagName){
+
+    const pFloor = 1.2;
+    const size = getSizeId("300x250");
+    console.log(tagName)
     return nightmare
         .goto("http://adcenter.lijit.com/adminpublisher/search/zone/new/" + affiliateId)
+        .refresh()
+        .type("#userzonename", tagName)
+        .evaluate(function() {
+            document.querySelector('#cpmfloor').value = ''
+        })
+        .type("#cpmfloor", pFloor)
+        .click("input[id=using_efp]")
+        .click("input[id=international]")
+        .select("#ad_type", size)
         .wait(1000);
 }
 
@@ -51,11 +65,9 @@ function getSizeId(size){
 	return sizeIdKey[standardizedSize];
 }
 
-function fillOutForm(){
-    const tagName = "Testing_Nightmare_Taginator";
-    const pFloor = 1.2;
-    const size = getSizeId("300x250");
+function fillOutForm(tagName, pFloor, size){
     return nightmare
+        .refresh()
         .type("#userzonename", tagName)
         .evaluate(function() {
             document.querySelector('#cpmfloor').value = ''
@@ -63,14 +75,15 @@ function fillOutForm(){
         .type("#cpmfloor", pFloor)
         .click("input[id=using_efp]")
         .click("input[id=international]")
-        .select("#ad_type", size);
+        .select("#ad_type", size)
+        .wait(2000);
 }
 
 
-function runTaginator(){
-    logIntoAdCenter()
-    .then(goToCreateZonePage()
-    .then(fillOutForm()));
-}
+const tag_names = ["testing_taginator_1", "testing_taginator_2", "testing_taginator_3"]
 
-runTaginator();
+logIntoAdCenter()
+    .then((()=> {
+        return Promise.mapSeries(tag_names, makeTheTag)
+            .catch(e => console.log(e))
+    }))
